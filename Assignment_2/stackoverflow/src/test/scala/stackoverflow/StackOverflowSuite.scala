@@ -1,0 +1,45 @@
+package stackoverflow
+
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
+
+@RunWith(classOf[JUnitRunner])
+class StackOverflowSuite extends FunSuite with BeforeAndAfterAll {
+
+
+  lazy val testObject = new StackOverflow {
+    override val langs =
+      List(
+        "JavaScript", "Java", "PHP", "Python", "C#", "C++", "Ruby", "CSS",
+        "Objective-C", "Perl", "Scala", "Haskell", "MATLAB", "Clojure", "Groovy")
+    override def langSpread = 50000
+    override def kmeansKernels = 45
+    override def kmeansEta: Double = 20.0D
+    override def kmeansMaxIterations = 120
+  }
+
+
+  test("testObject can be instantiated") {
+    val instantiatable = try {
+      testObject
+      true
+    } catch {
+      case _: Throwable => false
+    }
+    assert(instantiatable, "Can't instantiate a StackOverflow object")
+  }
+
+  //it's based on Nicolas Bentayou's test case. thanks Nicolas Bentayou!
+
+  test("cluster") {
+    val vectors = StackOverflow.sc.parallelize(List( (450000, 39),(500000, 31),(150000,1),(150000,10),(500000, 55),(150000,2) ,(150000,22)))
+    val means = Array((500000, 13),(150000,10))
+    val results: Array[(String, Double, Int, Int)] = testObject.clusterResults(means, vectors)
+    testObject.printResults(results)
+    println(results(0))
+    println(results(1))
+    assert(results.contains("Python", 100.0, 4, 6)) //I like python~!
+    assert(results.contains("Scala", 66.66666666666666, 3,39))
+  }
+}
